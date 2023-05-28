@@ -52,7 +52,6 @@ def main():
     nearest_cells = [[cell.id for cell in sorted(cells, key=lambda cell: distances[i][cell.id])] for i in range(n_cells)]
 
     # Game loop
-    target_cell = base_id
     while True:
         my_ants, opp_ants = 0, 0
         for i in range(n_cells):
@@ -60,26 +59,18 @@ def main():
             cells[i].update(r, my, opp)
             my_ants += my
             opp_ants += opp
-        target_type = 0
-        if my_ants < opp_ants * 0.9:
-            target_type = 1
-        elif my_ants > opp_ants * 1.1:
-            target_type = 2
-        log(my_ants, opp_ants, target_type)
-        if target_cell is None or cells[target_cell].resources <= 0:
-            for i in nearest_cells[target_cell]:
-                if cells[i].resources <= 0:
-                    continue
-                if target_type == 1 and cells[i].type !=1:
-                    continue
-                if target_type == 2 and cells[i].type != 2:
-                    continue
-                target = i
+        target_cells = []
+        path_length = 0
+        for i in nearest_cells[base_id]:
+            if path_length >= my_ants:
                 break
-            else:
-                target = None
-        if target is not None:
-            print(f"LINE {base_id} {target} 1")
+            if cells[i].resources <= 0:
+                continue
+            target_cells.append(i)
+            path_length += distances[base_id][i]
+        log(target_cells)
+        if target_cells:
+            print(";".join(f"LINE {base_id} {target} 1" for target in target_cells))
         else:
             print("WAIT")
 
