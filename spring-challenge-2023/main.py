@@ -31,38 +31,40 @@ def main():
     for i in range(n_cells):
         t, r, *neigh = map(int, input().split())
         cells.append(Cell(i, t, r, neigh))
-    log(*cells, sep="\n")
     n_bases = int(input())
     my_bases = {int(input()) for _ in range(n_bases)}
     opp_bases = {int(input()) for _ in range(n_bases)}
+    base_id = list(my_bases)[0]
 
-    distances = [-1] * n_cells
-    base_id = -1
-    todo = deque()
-    for i in my_bases:
+    # Compute distances
+    distances = [[-1] * n_cells for _ in range(n_cells)]
+    for i in range(n_cells):
+        todo = deque()
         todo.append((i, 0))
-        base_id = i
-    while todo:
-        i, d = todo.popleft()
-        if distances[i] != -1:
-            continue
-        distances[i] = d
-        for j in cells[i].neighbors:
-            if j != -1:
-                todo.append((j, d + 1))
-    log(distances)
-    nearest_cells = [cell.id for cell in sorted(cells, key=lambda cell: distances[cell.id])]
-    log(nearest_cells)
+        while todo:
+            j, d = todo.popleft()
+            if distances[i][j] != -1:
+                continue
+            distances[i][j] = d
+            for k in cells[j].neighbors:
+                if k != -1:
+                    todo.append((k, d + 1))
+    nearest_cells = [[cell.id for cell in sorted(cells, key=lambda cell: distances[i][cell.id])] for i in range(n_cells)]
 
     # Game loop
+    target = base_id
     while True:
         for i in range(n_cells):
             cells[i].update(*map(int, input().split()))
-        for i in nearest_cells:
-            cell = cells[i]
-            if cell.resources > 0:
-                print(f"LINE {base_id} {cell.id} 1")
-                break
+        if not target or cells[target].resources <= 0:
+            for i in nearest_cells[target]:
+                if cells[i].resources > 0:
+                    target = i
+                    break
+            else:
+                target = None
+        if target is not None:
+            print(f"LINE {base_id} {target} 1")
         else:
             print("WAIT")
 
