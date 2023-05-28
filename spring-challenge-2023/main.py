@@ -32,8 +32,8 @@ def main():
         t, r, *neigh = map(int, input().split())
         cells.append(Cell(i, t, r, neigh))
     n_bases = int(input())
-    my_bases = {int(input()) for _ in range(n_bases)}
-    opp_bases = {int(input()) for _ in range(n_bases)}
+    my_bases = set(map(int, input().split()))
+    opp_bases = set(map(int, input().split()))
     base_id = list(my_bases)[0]
 
     # Compute distances
@@ -59,6 +59,12 @@ def main():
             cells[i].update(r, my, opp)
             my_ants += my
             opp_ants += opp
+        target_type = 0
+        if my_ants < opp_ants * 0.9:
+            target_type = 1
+        elif my_ants > opp_ants * 1.1:
+            target_type = 2
+        log(my_ants, opp_ants, target_type)
         target_cells = []
         path_length = 0
         for i in nearest_cells[base_id]:
