@@ -52,15 +52,30 @@ def main():
     nearest_cells = [[cell.id for cell in sorted(cells, key=lambda cell: distances[i][cell.id])] for i in range(n_cells)]
 
     # Game loop
-    target = base_id
+    target_cell = base_id
     while True:
+        my_ants, opp_ants = 0, 0
         for i in range(n_cells):
-            cells[i].update(*map(int, input().split()))
-        if not target or cells[target].resources <= 0:
-            for i in nearest_cells[target]:
-                if cells[i].resources > 0:
-                    target = i
-                    break
+            r, my, opp = map(int, input().split())
+            cells[i].update(r, my, opp)
+            my_ants += my
+            opp_ants += opp
+        target_type = 0
+        if my_ants < opp_ants * 0.9:
+            target_type = 1
+        elif my_ants > opp_ants * 1.1:
+            target_type = 2
+        log(my_ants, opp_ants, target_type)
+        if target_cell is None or cells[target_cell].resources <= 0:
+            for i in nearest_cells[target_cell]:
+                if cells[i].resources <= 0:
+                    continue
+                if target_type == 1 and cells[i].type !=1:
+                    continue
+                if target_type == 2 and cells[i].type != 2:
+                    continue
+                target = i
+                break
             else:
                 target = None
         if target is not None:
