@@ -56,15 +56,18 @@ def main():
     # Game loop
     while True:
         my_ants, opp_ants = 0, 0
+        eggs = 0
         for i in range(n_cells):
             r, my, opp = map(int, input().split())
             cells[i].update(r, my, opp)
             my_ants += my
             opp_ants += opp
+            if cells[i].type == 1:
+                eggs += r
         target_type = 0
-        if my_ants < opp_ants * 0.9:
+        if eggs > 0 and my_ants < opp_ants * 1.2:
             target_type = 1
-        elif my_ants > opp_ants * 1.1:
+        elif my_ants > opp_ants * 1.5:
             target_type = 2
         log(my_ants, opp_ants, target_type)
         beacons = set()
