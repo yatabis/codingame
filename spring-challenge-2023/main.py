@@ -38,17 +38,19 @@ def main():
 
     # Compute distances
     distances = [-1] * n_cells
+    parent = [-1] * n_cells
     nearset_base = [-1] * n_cells
-    todo = deque([(base, 0, base) for base in my_bases])
+    todo = deque([(base, 0, base, base) for base in my_bases])
     while todo:
-        i, d, b = todo.popleft()
+        i, d, p, b = todo.popleft()
         if distances[i] != -1:
             continue
         distances[i] = d
+        parent[i] = p
         nearset_base[i] = b
         for j in cells[i].neighbors:
             if j != -1:
-                todo.append((j, d + 1, b))
+                todo.append((j, d + 1, i, b))
     nearest_cells = [cell.id for cell in sorted(cells, key=lambda cell: distances[cell.id])]
 
     # Game loop
@@ -65,24 +67,30 @@ def main():
         elif my_ants > opp_ants * 1.1:
             target_type = 2
         log(my_ants, opp_ants, target_type)
-        target_cells = []
-        path_length = 0
+        beacons = set()
         for i in nearest_cells:
-            if path_length >= my_ants:
-                break
             if cells[i].resources <= 0:
                 continue
             if target_type == 1 and cells[i].type != 1:
                 continue
             if target_type == 2 and cells[i].type != 2:
                 continue
-            target_cells.append((i, nearset_base[i]))
-            path_length += distances[i]
-        log(target_cells)
-        if target_cells:
-            print(";".join(f"LINE {base} {target} 1" for target, base in target_cells))
+            target = i
+            b = {i}
+            while parent[i] != i:
+                i = parent[i]
+                b.add(i)
+            if sum(cells[i].opp_ants + 1 for i in beacons | b) > my_ants:
+                break
+            log(target, b)
+            beacons |= b
+        log(beacons)
+        if beacons:
+            output = ";".join(f"BEACON {b} 1" for b in beacons)
         else:
-            print("WAIT")
+            output = "WAIT"
+        output += f";MESSAGE ({my_ants}) vs ({opp_ants})"
+        print(output)
 
 
 if __name__ == '__main__':
