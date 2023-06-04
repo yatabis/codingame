@@ -70,7 +70,7 @@ def main():
         elif my_ants > opp_ants * 1.5:
             target_type = 2
         log(my_ants, opp_ants, target_type)
-        beacons = set()
+        beacons = {}
         for i in nearest_cells:
             if cells[i].resources <= 0:
                 continue
@@ -80,13 +80,22 @@ def main():
                 continue
             target = i
             b = {i}
+            strength = -1
             while parent[i] != i:
                 i = parent[i]
                 b.add(i)
-            if sum(cells[i].opp_ants + 1 for i in beacons | b) > my_ants:
+                if strength == -1 or cells[i].opp_ants + 1 < strength:
+                    strength = cells[i].opp_ants + 1
+            updated = {**beacons}
+            for bi in b:
+                if bi in updated:
+                    updated[bi] = max(updated[bi], strength)
+                else:
+                    updated[bi] = strength
+            if sum(updated.values()) > my_ants:
                 break
-            log(target, b)
-            beacons |= b
+            log(target, strength, b)
+            beacons = updated
         log(beacons)
         if beacons:
             output = ";".join(f"BEACON {b} 1" for b in beacons)
