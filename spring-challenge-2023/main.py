@@ -32,24 +32,24 @@ def main():
         t, r, *neigh = map(int, input().split())
         cells.append(Cell(i, t, r, neigh))
     n_bases = int(input())
-    my_bases = set(map(int, input().split()))
-    opp_bases = set(map(int, input().split()))
-    base_id = list(my_bases)[0]
+    my_bases = [int(i) for i in input().split()]
+    opp_bases = [int(i) for i in input().split()]
+    base_id = my_bases[0]
 
     # Compute distances
-    distances = [[-1] * n_cells for _ in range(n_cells)]
-    for i in range(n_cells):
-        todo = deque()
-        todo.append((i, 0))
-        while todo:
-            j, d = todo.popleft()
-            if distances[i][j] != -1:
-                continue
-            distances[i][j] = d
-            for k in cells[j].neighbors:
-                if k != -1:
-                    todo.append((k, d + 1))
-    nearest_cells = [[cell.id for cell in sorted(cells, key=lambda cell: distances[i][cell.id])] for i in range(n_cells)]
+    distances = [-1] * n_cells
+    nearset_base = [-1] * n_cells
+    todo = deque([(base, 0, base) for base in my_bases])
+    while todo:
+        i, d, b = todo.popleft()
+        if distances[i] != -1:
+            continue
+        distances[i] = d
+        nearset_base[i] = b
+        for j in cells[i].neighbors:
+            if j != -1:
+                todo.append((j, d + 1, b))
+    nearest_cells = [cell.id for cell in sorted(cells, key=lambda cell: distances[cell.id])]
 
     # Game loop
     while True:
@@ -67,16 +67,20 @@ def main():
         log(my_ants, opp_ants, target_type)
         target_cells = []
         path_length = 0
-        for i in nearest_cells[base_id]:
+        for i in nearest_cells:
             if path_length >= my_ants:
                 break
             if cells[i].resources <= 0:
                 continue
-            target_cells.append(i)
-            path_length += distances[base_id][i]
+            if target_type == 1 and cells[i].type != 1:
+                continue
+            if target_type == 2 and cells[i].type != 2:
+                continue
+            target_cells.append((i, nearset_base[i]))
+            path_length += distances[i]
         log(target_cells)
         if target_cells:
-            print(";".join(f"LINE {base_id} {target} 1" for target in target_cells))
+            print(";".join(f"LINE {base} {target} 1" for target, base in target_cells))
         else:
             print("WAIT")
 
