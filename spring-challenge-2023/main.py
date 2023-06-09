@@ -57,6 +57,7 @@ def main():
     while True:
         my_ants, opp_ants = 0, 0
         eggs = 0
+        my_score, opp_score = map(int, input().split())
         for i in range(n_cells):
             r, my, opp = map(int, input().split())
             cells[i].update(r, my, opp)
@@ -101,7 +102,7 @@ def main():
             output = ";".join(f"BEACON {b} 1" for b in beacons)
         else:
             output = "WAIT"
-        output += f";MESSAGE ({my_ants}) vs ({opp_ants})"
+        output += f";MESSAGE ({my_score}, {my_ants}) vs ({opp_score}, {opp_ants})"
         print(output)
 
 
